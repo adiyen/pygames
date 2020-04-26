@@ -34,7 +34,8 @@ with open("data/game_idx.txt", "r") as f:
 with open("data/game_idx.txt", "w") as f:
     f.write(str(current+1))
 game_file = f"data/game_{str(current)}.txt"
-
+with open(game_file, "w") as f:
+    f.write("bird_y, bottom_pipe_y, top_pipe_y, dist\n")
 with open("high_score.txt", "r") as f:
     high_score = int(f.read())
     orig_high_score = high_score
