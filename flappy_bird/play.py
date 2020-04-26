@@ -35,7 +35,7 @@ with open("data/game_idx.txt", "w") as f:
     f.write(str(current+1))
 game_file = f"data/game_{str(current)}.txt"
 with open(game_file, "w") as f:
-    f.write("bird_y, bottom_pipe_y, top_pipe_y, dist\n")
+    f.write("bird_y, bottom_pipe_y, top_pipe_y, dist, did_jump\n")
 with open("high_score.txt", "r") as f:
     high_score = int(f.read())
     orig_high_score = high_score
@@ -63,7 +63,7 @@ def updateWalls():
             
 
 def birdUpdate():
-    global press_jump, jump, jumpSpeed, birdY, birdX, gravity, wall_1_x, wall_2_x, space1, space2, alive, score, orig_high_score, wall_speed, gap, beginning
+    global press_jump, jump, jumpSpeed, birdY, birdX, gravity, wall_1_x, wall_2_x, space1, space2, alive, score, orig_high_score, wall_speed, gap, beginning, high_score
     if jump:
         jumpSpeed -= 1
         birdY -= jumpSpeed
@@ -75,13 +75,11 @@ def birdUpdate():
     if wall_1_x < -20:
         beginning = True
     if beginning == True and (wall_1_x < -80 or wall_1_x > 150):
-        # print("2")
         wall = 2
         space = space2   
         upRect = pygame.Rect(wall_2_x, 0 - gap - space2, top_pipe.get_width() - 10, top_pipe.get_height())
         downRect = pygame.Rect(wall_2_x, 360 + gap - space2, bottom_pipe.get_width() - 10, bottom_pipe.get_height())
     else:
-        # print("1")
         wall = 1
         space = space1
         upRect = pygame.Rect(wall_1_x, 0 - gap - space1, top_pipe.get_width() - 10, top_pipe.get_height())
@@ -97,19 +95,26 @@ def birdUpdate():
         else:
             dist = wall_2_x-birdX
     if upRect.colliderect(bird):
-        # if alive:
-            # print(0 - gap - space + 500, 360 + gap - space, space)
+        if high_score > orig_high_score:
+            with open("high_score.txt", "w") as f:
+                f.write(str(high_score))
         alive = False
         
     if downRect.colliderect(bird):
-        # if alive:
-            # print(0 - gap - space + 500, 360 + gap - space, space)
-
+        if high_score > orig_high_score:
+            with open("high_score.txt", "w") as f:
+                f.write(str(high_score))
         alive = False
     if alive:
         with open(game_file, "a") as f:
             f.write(f"{int(birdY)},{360 + gap - space},{0 - gap - space + 500},{dist},{int(press_jump)}\n")
             press_jump = False
+    else:
+        with open(game_file, "a") as f:
+            f.write(f"{int(birdY)},{360 + gap - space},{0 - gap - space + 500},{dist},{-1}\n")
+            press_jump = False
+
+
     if not 0 < bird[1] < 720:
         if orig_high_score < high_score:
             with open("high_score.txt", "w") as f:
@@ -118,7 +123,7 @@ def birdUpdate():
         bird[1] = 50
         birdY = 50
         gap = 170
-        # alive = True
+        alive = True
         score = 0
         wall_1_x = 400
         wall_2_x = 650
@@ -133,24 +138,19 @@ def runner():
     pygame.font.init()
     score_font = pygame.font.SysFont("Arial", 50)
     high_score_font = pygame.font.SysFont("Arial", 20)
-    while alive == True:
+    while True:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                if high_score > orig_high_score:
+                    with open("high_score.txt", "w") as f:
+                        f.write(str(high_score))
                 sys.exit()
             if event.type == pygame.KEYDOWN and alive == True:
                 jump = 17
                 press_jump = True
                 gravity = 5
                 jumpSpeed = 10
-
-            # if(count == 10):
-            #     state = False
-            # else:
-            #     with open("data.txt", "a") as f:
-            #         f.write(",0\n")     
-        # if state:
-        #     print(wall_1_x-birdX)
         screen.fill((255, 255, 255))
         screen.blit(background, (0, 0))
         screen.blit(top_pipe, (wall_1_x, 0 - gap - space1))
